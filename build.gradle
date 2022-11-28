@@ -1,3 +1,6 @@
+apply plugin: 'java'
+apply plugin: 'io.github.zebalu.teavm-gradle-plugin'
+
 buildscript{
     ext{
         getArcHash = {
@@ -13,11 +16,13 @@ buildscript{
         google()
         maven{ url "https://oss.sonatype.org/content/repositories/snapshots/" }
         maven{ url 'https://jitpack.io' }
+        jcenter()
     }
 
     dependencies{
         classpath "com.github.Anuken.Arc:packer:$arcHash"
         classpath "com.github.Anuken.Arc:arc-core:$arcHash"
+        classpath 'io.github.zebalu:teavm-gradle-plugin:+'
     }
 }
 
@@ -477,4 +482,73 @@ task resolveDependencies{
             configurations.findAll{c -> c.canBeResolved}.forEach{c -> c.resolve()}
         }
     }
+}
+
+teavm {
+        apply plugin: "java"
+
+    compileJava.options.fork = true
+
+    dependencies{
+        implementation project(":core")
+        implementation arcModule("extensions:discord")
+        implementation arcModule("natives:natives-desktop")
+        implementation arcModule("natives:natives-freetype-desktop")
+
+        if(debugged()) implementation project(":debug")
+
+        implementation "com.github.Anuken:steamworks4j:$steamworksVersion"
+
+        implementation arcModule("backends:backend-sdl")
+    }
+   /** It a FileCollection object with all the calssfiles to use in compilation */
+   classFiles = null;
+   
+   compileScopes = null;
+   minifying = true;
+   maxTopLevelNames = 10000;
+   properties = null;
+   debugInformationGenerated = false;
+   sourceMapsGenerated = false;
+   sourceFilesCopied = false;
+   incremental = false;
+   transformers = null;
+   // compile desktop project
+   /** Where to save the result */
+   targetDirectory = "javascript";
+   
+   /** The directory to monitor to decide if compile is up-to-date or not
+   sourceDirectory = null;
+   
+   /** How to name the result file. */
+   targetFileName = "mindustry.js";
+   
+   /** Which class holds your public static void main(Strin[] args) method */
+   mainClass = "mindustry.desktop.DesktopLauncher";
+   
+   /** This will be the name of your main method after compilation. */
+   entryPointName = 'main';
+   
+   classesToPreserve = null;
+   stopOnErrors = true;
+   optimizationLevel = "SIMPLE"; //org.teavm.vm.TeaVMOptimizationLevel.SIMPLE;
+   fastGlobalAnalysis = false;
+   targetType = "JAVASCRIPT"; //org.teavm.tooling.TeaVMTargetType.JAVASCRIPT;
+   cacheDirectory = null;
+   wasmVersion = "V_0x1"; //org.teavm.backend.wasm.render.WasmBinaryVersion.V_0x1;
+   minHeapSize = 4;
+   maxHeapSize = 128;
+   outOfProcess = false;
+   processMemory = 512;
+   longjmpSupported = true;
+   heapDump = false;
+   
+   /** Add name of configurations here where to look for jarfiles. */
+   includeJarsFrom = ['runtimeClasspath'];
+   
+   /** FileCollection object which adds extra jars to compilation. */
+   extraLibs = null;
+   
+   /** By default teavmc taskd epends on javaCompile task, unless this varaibale is true. */
+   skipJavaCompile = false;       
 }
